@@ -12,7 +12,7 @@ source:
 build:
   number: 1 
   noarch: python
-  script: {{ PYTHON }} -m pip install . -vv
+  script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed . -vv
 
 requirements:
   host:
@@ -21,7 +21,7 @@ requirements:
   run:
     - python
     - pytorch-base {{ pytorch }}
-    - pytorch-lightning
+    - pytorch-lightning {{ pytorch_lightning }}
 
 test:
   imports:

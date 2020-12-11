@@ -9,7 +9,7 @@ tests:
         git checkout ${PLBOLTS_COMMIT}
         pip install -r requirements/test.txt
         pip install gym 
-  - name: Run PyTorch-Lightning tests
+  - name: Run PyTorch-Lightning-Bolts tests
     command: |
         cd pytorch-lightning-bolts
         pytest --ignore 'tests/losses/test_rl_loss.py' --ignore 'tests/models/test_executable_scripts.py' --ignore 'tests/models/rl/test_scripts.py' --ignore 'tests/models/rl/integration/test_value_models.py' --ignore 'tests/models/self_supervised/test_scripts.py' --ignore 'tests/models/self_supervised/test_models.py' --ignore 'tests/models/test_scripts.py' -k "not test_balance_classes and not test_dataloader" -v tests/

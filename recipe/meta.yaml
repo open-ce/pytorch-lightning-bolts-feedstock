@@ -1,0 +1,40 @@
+{% set name = "pytorch-lightning-bolts" %}
+{% set version = "0.2.5" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  git_url: https://github.com/PyTorchLightning/pytorch-lightning-bolts
+  git_rev: {{ version }}
+
+build:
+  number: 1 
+  noarch: python
+  script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed . -vv
+
+requirements:
+  host:
+    - pip {{ pip }}
+    - python 
+  run:
+    - python
+    - pytorch-base {{ pytorch }}
+    - pytorch-lightning {{ pytorch_lightning }}
+
+test:
+  imports:
+    - pl_bolts
+
+about:
+  home: https://github.com/PyTorchLightning/pytorch-lightning-bolts/
+  summary: Pretrained SOTA Deep Learning models, callbacks and more for research and production with PyTorch Lightning and PyTorch.
+  description: Pretrained SOTA Deep Learning models, callbacks and more for research and production with PyTorch Lightning and PyTorch.
+  license: Apache-2.0
+  license_family: Apache
+  license_file: LICENSE
+
+extra:
+  recipe-maintainers:
+    - open-ce/open-ce-dev-team

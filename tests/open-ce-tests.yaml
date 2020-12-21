@@ -1,14 +1,15 @@
 tests:
   - name: Setup PyTorch-Lightning-Bolts Tests
     command: |
-        PLBOLTS_VERSION=$(python -c "import pl_bolts; print(pl_bolts.__version__)")
-        PLBOLTS_COMMIT=${PL_VERSION#*+}
+        git clone -b $(python -c "import pl_bolts; print(pl_bolts.__version__)") https://github.com/PyTorchLightning/pytorch-lightning-bolts.git
         conda install -y git pytest
-        git clone https://github.com/PyTorchLightning/pytorch-lightning-bolts
+{% if python=='3.6' %}
+        conda install -y dataclasses
+{% endif %}
         cd pytorch-lightning-bolts
-        git checkout ${PLBOLTS_COMMIT}
+        git apply ../pytorch-lightning-bolts-feedstock/recipe/0301-fix-tests.patch 
+        pip install gym
         pip install -r requirements/test.txt
-        pip install gym 
   - name: Run PyTorch-Lightning-Bolts tests
     command: |
         cd pytorch-lightning-bolts

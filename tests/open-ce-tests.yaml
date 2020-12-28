@@ -1,17 +1,18 @@
 tests:
   - name: Setup PyTorch-Lightning-Bolts Tests
     command: |
-        PLBOLTS_VERSION=$(python -c "import pl_bolts; print(pl_bolts.__version__)")
-        PLBOLTS_COMMIT=${PL_VERSION#*+}
-        conda install -y git pytest
-        git clone https://github.com/PyTorchLightning/pytorch-lightning-bolts
+        git clone -b $(python -c "import pl_bolts; print(pl_bolts.__version__)") https://github.com/PyTorchLightning/pytorch-lightning-bolts.git
+        conda install -y git pytest regex typed-ast
+{% if python=='3.6' %}
+        conda install -y dataclasses
+{% endif %}
         cd pytorch-lightning-bolts
-        git checkout ${PLBOLTS_COMMIT}
+        git apply $FEEDSTOCK_DIR/recipe/0301-fix-tests.patch 
+        pip install gym
         pip install -r requirements/test.txt
-        pip install gym 
   - name: Run PyTorch-Lightning-Bolts tests
     command: |
         cd pytorch-lightning-bolts
-        pytest --ignore 'tests/losses/test_rl_loss.py' --ignore 'tests/models/test_executable_scripts.py' --ignore 'tests/models/rl/test_scripts.py' --ignore 'tests/models/rl/integration/test_value_models.py' --ignore 'tests/models/self_supervised/test_scripts.py' --ignore 'tests/models/self_supervised/test_models.py' --ignore 'tests/models/test_scripts.py' -k "not test_balance_classes and not test_dataloader" -v tests/
+        pytest --ignore 'tests/losses/test_rl_loss.py' --ignore 'tests/models/test_executable_scripts.py' --ignore 'tests/models/rl/test_scripts.py' --ignore 'tests/models/rl/integration/test_value_models.py' --ignore 'tests/models/self_supervised/test_scripts.py' --ignore 'tests/models/self_supervised/test_models.py' --ignore 'tests/models/test_scripts.py' -k "not test_balance_classes and not test_dataloader and not test_linear_regression_model" -v tests/
   - name: Clean tests
     command: rm -rf pytorch-lightning-bolts

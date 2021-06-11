@@ -10,7 +10,7 @@ source:
   git_rev: {{ version }}
 
 build:
-  number: 2
+  number: 3
   string: py_{{ PKG_BUILDNUM }}
   noarch: python
   script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed . -vv
@@ -19,12 +19,19 @@ requirements:
   host:
     - pip {{ pip }}
     - python 
+    #Use pins to control cos6/cos7 match
+    - libgcc-ng  {{ libgcc }}
+    - libstdcxx-ng  {{ libstdcxx }}
   run:
     - python
     - pytorch-base {{ pytorch }}
     - pytorch-lightning {{ pytorch_lightning }}
 
 test:
+  requires:
+  #Use pins to control cos6/cos7 match
+    - libgcc-ng  {{ libgcc }}
+    - libstdcxx-ng  {{ libstdcxx }}
   imports:
     - pl_bolts
 

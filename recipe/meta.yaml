@@ -10,7 +10,7 @@ source:
   git_rev: {{ version }}
 
 build:
-  number: 2
+  number: 1
   string: py_{{ PKG_BUILDNUM }}
   noarch: python
   script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed . -vv

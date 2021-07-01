@@ -1,24 +1,13 @@
 diff --git a/requirements/test.txt b/requirements/test.txt
-index c97d36f..30ad1c7 100644
+index c8257bd..8437ab6 100644
 --- a/requirements/test.txt
 +++ b/requirements/test.txt
-@@ -7,5 +7,3 @@ flake8>=3.6
- flake8-black
- check-manifest
- twine==1.13.0
--
+@@ -12,6 +12,5 @@ pre-commit>=1.0
+ mypy
+ yapf
+ 
 -atari-py==0.2.6  # needed for RL
+ 
+-scikit-learn>=0.23
 \ No newline at end of file
-diff --git a/tests/models/test_detection.py b/tests/models/test_detection.py
-index 61edf2e..a312fbc 100644
---- a/tests/models/test_detection.py
-+++ b/tests/models/test_detection.py
-@@ -3,7 +3,7 @@ import pytorch_lightning as pl
- import torch
- from torch.utils.data import DataLoader
-
--from pl_bolts.datamodules import DummyDetectionDataset
-+from pl_bolts.datasets import DummyDetectionDataset
- from pl_bolts.models.detection import FasterRCNN
-
-
++scikit-learn>=0.23

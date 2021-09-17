@@ -13,6 +13,6 @@ tests:
   - name: Run PyTorch-Lightning-Bolts tests
     command: |
         cd pytorch-lightning-bolts
-        pytest --ignore 'tests/losses/test_rl_loss.py' --ignore 'tests/models/test_executable_scripts.py' --ignore 'tests/models/rl/test_scripts.py' --ignore 'tests/models/rl/integration/test_value_models.py' --ignore 'tests/models/self_supervised/test_scripts.py' --ignore 'tests/models/self_supervised/test_models.py' --ignore 'tests/models/test_scripts.py' -k "not test_balance_classes and not test_dataloader and not test_linear_regression_model and not test_base_log_interval_override and not test_base_log_interval_fallback and not test_data_modules and not test_vision_data_module" -v tests/
+        pytest --ignore 'tests/losses/test_rl_loss.py' --ignore 'tests/models/test_executable_scripts.py' --ignore 'tests/models/rl/test_scripts.py' --ignore 'tests/models/rl/integration/test_value_models.py' --ignore 'tests/models/self_supervised/test_scripts.py' --ignore 'tests/models/self_supervised/test_models.py' --ignore 'tests/models/test_scripts.py' -k "not test_balance_classes and not test_dataloader and not test_linear_regression_model and not test_base_log_interval_override and not test_base_log_interval_fallback and not test_data_modules and not test_vision_data_module and not test_batch_gradient_verification and not test_gan and not test_dcgan and not test_logistic_regression_model and not test_mnist and not test_verification_base_get_input_array" -v tests/
   - name: Clean tests
     command: rm -rf pytorch-lightning-bolts

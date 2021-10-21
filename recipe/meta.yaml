@@ -8,9 +8,11 @@ package:
 source:
   git_url: https://github.com/PyTorchLightning/pytorch-lightning-bolts
   git_rev: {{ version }}
+  patches:
+    - 0100-remove-moco-model.patch
 
 build:
-  number: 2
+  number: 3
   string: pyh{{ PKG_HASH }}_{{ PKG_BUILDNUM }}
   noarch: python
   script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed . -vv

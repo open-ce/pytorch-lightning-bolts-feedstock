@@ -8,7 +8,7 @@ tests:
 {% endif %}
         cd pytorch-lightning-bolts
         git apply $FEEDSTOCK_DIR/recipe/0301-fix-tests.patch
-        pip install gym
+        pip install gym==0.19.0
         pip install -r requirements/test.txt
   - name: Run PyTorch-Lightning-Bolts tests
     command: |
@@ -27,7 +27,9 @@ tests:
                      "not test_logistic_regression_model and"
                      "not test_mnist and"
                      "not test_verification_base_get_input_array and"
-                     "not test_cli_run_ssl_moco"
+                     "not test_cli_run_ssl_moco and"
+                     "not test_sac and"
+                     "not test_fasterrcnn"
         )
 
         TESTSUITES_TO_SKIP=(

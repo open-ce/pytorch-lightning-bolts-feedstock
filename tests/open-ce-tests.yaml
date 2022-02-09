@@ -31,6 +31,8 @@ tests:
                      "not test_retinanet_train and"
                      "not test_retinanet_backbone_train and"
                      "not test_yolo_train and"
+                     "not test_cli_run_ssl_simclr and"
+                     "not test_cli_run_ssl_swav and"
                      "not test_fasterrcnn"
         )
 

@@ -37,7 +37,6 @@ tests:
         )
 
         TESTSUITES_TO_SKIP=(
-#                      tests/transforms/test_transforms.py
                       tests/losses/test_rl_loss.py
                       tests/models/rl/test_scripts.py
                       tests/models/self_supervised/test_models.py

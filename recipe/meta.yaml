@@ -1,5 +1,5 @@
 {% set name = "pytorch-lightning-bolts" %}
-{% set version = "0.4.0" %}
+{% set version = "0.5.0" %}
 
 package:
   name: {{ name|lower }}
@@ -12,7 +12,7 @@ source:
     - 0100-remove-moco-model.patch
 
 build:
-  number: 3
+  number: 1
   string: pyh{{ PKG_HASH }}_{{ PKG_BUILDNUM }}
   noarch: python
   script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed . -vv

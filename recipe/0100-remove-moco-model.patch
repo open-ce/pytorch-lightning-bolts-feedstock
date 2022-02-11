@@ -471,10 +471,10 @@ index 992c1a2..0000000
 -            param_group["lr"] = lr
 diff --git a/pl_bolts/models/self_supervised/moco/moco2_module.py b/pl_bolts/models/self_supervised/moco/moco2_module.py
 deleted file mode 100644
-index 91fd5fb..0000000
+index 5ab20d0..0000000
 --- a/pl_bolts/models/self_supervised/moco/moco2_module.py
 +++ /dev/null
-@@ -1,394 +0,0 @@
+@@ -1,396 +0,0 @@
 -"""Adapted from: https://github.com/facebookresearch/moco.
 -
 -Original work is: Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
@@ -490,6 +490,7 @@ index 91fd5fb..0000000
 -
 -import torch
 -from pytorch_lightning import LightningModule, Trainer
+-from pytorch_lightning.plugins import DDP2Plugin, DDPPlugin
 -from torch import nn
 -from torch.nn import functional as F
 -
@@ -502,7 +503,7 @@ index 91fd5fb..0000000
 -    Moco2TrainImagenetTransforms,
 -    Moco2TrainSTL10Transforms,
 -)
--from pl_bolts.utils import _PL_GREATER_EQUAL_1_4, _TORCHVISION_AVAILABLE
+-from pl_bolts.utils import _TORCHVISION_AVAILABLE
 -from pl_bolts.utils.warnings import warn_missing_pkg
 -
 -if _TORCHVISION_AVAILABLE:
@@ -784,7 +785,11 @@ index 91fd5fb..0000000
 -            momentum=self.hparams.momentum,
 -            weight_decay=self.hparams.weight_decay,
 -        )
--        return optimizer
+-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+-            optimizer,
+-            self.trainer.max_epochs,
+-        )
+-        return [optimizer], [scheduler]
 -
 -    @staticmethod
 -    def add_model_specific_args(parent_parser):
@@ -808,10 +813,7 @@ index 91fd5fb..0000000
 -
 -    @staticmethod
 -    def _use_ddp_or_ddp2(trainer: Trainer) -> bool:
--        # for backwards compatibility
--        if _PL_GREATER_EQUAL_1_4:
--            return trainer.accelerator_connector.use_ddp or trainer.accelerator_connector.use_ddp2
--        return trainer.use_ddp or trainer.use_ddp2
+-        return isinstance(trainer.training_type_plugin, (DDPPlugin, DDP2Plugin))
 -
 -
 -# utils
@@ -1072,3 +1074,107 @@ index 60ffb5e..0000000
 -        sigma = random.uniform(self.sigma[0], self.sigma[1])
 -        x = x.filter(ImageFilter.GaussianBlur(radius=sigma))
 -        return x
+diff --git a/tests/models/self_supervised/test_models.py b/tests/models/self_supervised/test_models.py
+index 59f0ca0..96f2f2b 100644
+--- a/tests/models/self_supervised/test_models.py
++++ b/tests/models/self_supervised/test_models.py
+@@ -7,8 +7,6 @@ from pytorch_lightning import Trainer
+ from pl_bolts.datamodules import CIFAR10DataModule
+ from pl_bolts.models.self_supervised import AMDIM, BYOL, CPC_v2, Moco_v2, SimCLR, SimSiam, SwAV
+ from pl_bolts.models.self_supervised.cpc import CPCEvalTransformsCIFAR10, CPCTrainTransformsCIFAR10
+-from pl_bolts.models.self_supervised.moco.callbacks import MocoLRScheduler
+-from pl_bolts.models.self_supervised.moco.transforms import Moco2EvalCIFAR10Transforms, Moco2TrainCIFAR10Transforms
+ from pl_bolts.models.self_supervised.simclr.transforms import SimCLREvalDataTransform, SimCLRTrainDataTransform
+ from pl_bolts.models.self_supervised.swav.transforms import SwAVEvalDataTransform, SwAVTrainDataTransform
+ from pl_bolts.transforms.dataset_normalizations import cifar10_normalization
+@@ -55,16 +53,6 @@ def test_amdim(tmpdir, datadir):
+     trainer.fit(model)
+ 
+ 
+-def test_moco(tmpdir, datadir):
+-    datamodule = CIFAR10DataModule(data_dir=datadir, num_workers=0, batch_size=2)
+-    datamodule.train_transforms = Moco2TrainCIFAR10Transforms()
+-    datamodule.val_transforms = Moco2EvalCIFAR10Transforms()
+-
+-    model = Moco_v2(data_dir=datadir, batch_size=2, online_ft=True)
+-    trainer = Trainer(fast_dev_run=True, default_root_dir=tmpdir, callbacks=[MocoLRScheduler()])
+-    trainer.fit(model, datamodule=datamodule)
+-
+-
+ def test_simclr(tmpdir, datadir):
+     datamodule = CIFAR10DataModule(data_dir=datadir, num_workers=0, batch_size=2)
+     datamodule.train_transforms = SimCLRTrainDataTransform(32)
+diff --git a/tests/models/self_supervised/test_ssl_scripts.py b/tests/models/self_supervised/test_ssl_scripts.py
+index e58fad9..3da8a71 100644
+--- a/tests/models/self_supervised/test_ssl_scripts.py
++++ b/tests/models/self_supervised/test_ssl_scripts.py
+@@ -43,23 +43,6 @@ def test_cli_run_ssl_cpc(cli_args, dataset_name):
+     with mock.patch("argparse._sys.argv", ["any.py"] + cli_args):
+         cli_main()
+ 
+-
+-@pytest.mark.parametrize(
+-    "cli_args",
+-    [
+-        _DEFAULT_ARGS + " --gpus 1",
+-    ],
+-)
+-@pytest.mark.skipif(**_MARK_REQUIRE_GPU)
+-def test_cli_run_ssl_moco(cli_args):
+-    """Test running CLI for an example with default params."""
+-    from pl_bolts.models.self_supervised.moco.moco2_module import cli_main
+-
+-    cli_args = cli_args.strip().split(" ") if cli_args else []
+-    with mock.patch("argparse._sys.argv", ["any.py"] + cli_args):
+-        cli_main()
+-
+-
+ @pytest.mark.parametrize(
+     "cli_args",
+     [
+diff --git a/tests/transforms/test_transforms.py b/tests/transforms/test_transforms.py
+index 978e0d5..260a884 100644
+--- a/tests/transforms/test_transforms.py
++++ b/tests/transforms/test_transforms.py
+@@ -27,14 +27,6 @@ from pl_bolts.models.self_supervised.cpc.transforms import (
+     CPCTrainTransformsImageNet128,
+     CPCTrainTransformsSTL10,
+ )
+-from pl_bolts.models.self_supervised.moco.transforms import (
+-    Moco2EvalCIFAR10Transforms,
+-    Moco2EvalImagenetTransforms,
+-    Moco2EvalSTL10Transforms,
+-    Moco2TrainCIFAR10Transforms,
+-    Moco2TrainImagenetTransforms,
+-    Moco2TrainSTL10Transforms,
+-)
+ from pl_bolts.models.self_supervised.simclr.transforms import SimCLREvalDataTransform, SimCLRTrainDataTransform
+ 
+ 
+@@ -67,8 +59,6 @@ def test_simclr_transforms(img_size):
+         CPCEvalTransformsCIFAR10,
+         AMDIMEvalTransformsCIFAR10,
+         AMDIMTrainTransformsCIFAR10,
+-        Moco2TrainCIFAR10Transforms,
+-        Moco2EvalCIFAR10Transforms,
+     ],
+ )
+ def test_cifar10_transforms(transform):
+@@ -86,8 +76,6 @@ def test_cifar10_transforms(transform):
+         CPCEvalTransformsSTL10,
+         AMDIMTrainTransformsSTL10,
+         AMDIMEvalTransformsSTL10,
+-        Moco2TrainSTL10Transforms,
+-        Moco2EvalSTL10Transforms,
+     ],
+ )
+ def test_stl10_transforms(transform):
+@@ -105,8 +93,6 @@ def test_stl10_transforms(transform):
+         CPCEvalTransformsImageNet128,
+         AMDIMTrainTransformsImageNet128,
+         AMDIMEvalTransformsImageNet128,
+-        Moco2TrainImagenetTransforms,
+-        Moco2EvalImagenetTransforms,
+     ],
+ )
+ def test_imagenet_transforms(transform):

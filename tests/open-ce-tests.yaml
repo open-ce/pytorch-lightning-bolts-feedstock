@@ -26,11 +26,17 @@ tests:
                      "not test_verification_base_get_input_array and"
                      "not test_cli_run_ssl_moco and"
                      "not test_sac and"
+                     "not test_simclr and"
+                     "not test_simsiam and"
+                     "not test_retinanet_train and"
+                     "not test_retinanet_backbone_train and"
+                     "not test_yolo_train and"
+                     "not test_cli_run_ssl_simclr and"
+                     "not test_cli_run_ssl_swav and"
                      "not test_fasterrcnn"
         )
 
         TESTSUITES_TO_SKIP=(
-                      tests/transforms/test_transforms.py
                       tests/losses/test_rl_loss.py
                       tests/models/rl/test_scripts.py
                       tests/models/self_supervised/test_models.py

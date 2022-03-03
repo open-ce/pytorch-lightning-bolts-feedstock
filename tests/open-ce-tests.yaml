@@ -3,9 +3,6 @@ tests:
     command: |
         git clone -b $(python -c "import pl_bolts; print(pl_bolts.__version__)") https://github.com/PyTorchLightning/pytorch-lightning-bolts.git
         conda install -y git pytest regex typed-ast scipy scikit-learn
-{% if python=='3.6' %}
-        conda install -y dataclasses
-{% endif %}
         cd pytorch-lightning-bolts
         git apply $FEEDSTOCK_DIR/recipe/0301-fix-tests.patch
         pip install gym==0.19.0
@@ -29,11 +26,17 @@ tests:
                      "not test_verification_base_get_input_array and"
                      "not test_cli_run_ssl_moco and"
                      "not test_sac and"
+                     "not test_simclr and"
+                     "not test_simsiam and"
+                     "not test_retinanet_train and"
+                     "not test_retinanet_backbone_train and"
+                     "not test_yolo_train and"
+                     "not test_cli_run_ssl_simclr and"
+                     "not test_cli_run_ssl_swav and"
                      "not test_fasterrcnn"
         )
 
         TESTSUITES_TO_SKIP=(
-                      tests/transforms/test_transforms.py
                       tests/losses/test_rl_loss.py
                       tests/models/rl/test_scripts.py
                       tests/models/self_supervised/test_models.py

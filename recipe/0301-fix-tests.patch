@@ -1,11 +1,13 @@
 diff --git a/requirements/test.txt b/requirements/test.txt
-index da446df..05d51e7 100644
+index b8f5871..bc988be 100644
 --- a/requirements/test.txt
 +++ b/requirements/test.txt
-@@ -10,6 +10,5 @@ isort>=5.6.4
+@@ -10,8 +10,5 @@ isort>=5.6.4
  pre-commit>=1.0
  mypy>=0.790
  
 -atari-py==0.2.6  # needed for RL
  scikit-learn>=0.23
- sparseml
+-sparseml
+-ale-py>=0.7
+ jsonargparse[signatures]  # for LightningCLI

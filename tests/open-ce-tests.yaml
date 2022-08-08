@@ -33,7 +33,8 @@ tests:
                      "not test_yolo_train and"
                      "not test_cli_run_ssl_simclr and"
                      "not test_cli_run_ssl_swav and"
-                     "not test_fasterrcnn"
+                     "not test_fasterrcnn and"
+                     "not test_generate_trajectory_samples"
         )
 
         TESTSUITES_TO_SKIP=(

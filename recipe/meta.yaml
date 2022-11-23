@@ -24,7 +24,7 @@ requirements:
   run:
     - python
     - pytorch-base {{ pytorch }}
-    - lightning {{ pytorch_lightning }}
+    - pytorch-lightning {{ pytorch_lightning }}
     - scikit-learn
     - matplotlib
 

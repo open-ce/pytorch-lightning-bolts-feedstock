@@ -40,8 +40,6 @@ tests:
         TESTSUITES_TO_SKIP=(
                       tests/losses/test_rl_loss.py
                       tests/models/rl/test_scripts.py
-                      tests/models/self_supervised/test_models.py
-                      tests/models/test_scripts.py
                       tests/models/rl/integration/test_value_models.py
         )
 
@@ -50,6 +48,6 @@ tests:
            SKIPPED_TEST_SUITES+="--ignore $skipped_test "
         done
 
-        pytest -k "${SKIPPED_TESTS[*]}" ${SKIPPED_TEST_SUITES} -v tests/
+        pytest -v ${SKIPPED_TEST_SUITES} tests/
   - name: Clean tests
     command: rm -rf pytorch-lightning-bolts

@@ -1,13 +1,13 @@
 diff --git a/requirements/test.txt b/requirements/test.txt
-index b8f5871..bc988be 100644
+index 8632fbc..08d4481 100644
 --- a/requirements/test.txt
 +++ b/requirements/test.txt
-@@ -10,8 +10,5 @@ isort>=5.6.4
+@@ -6,8 +6,5 @@ pytest-cov>2.10, <=4.0.0
+ check-manifest
  pre-commit>=1.0
- mypy>=0.790
- 
--atari-py==0.2.6  # needed for RL
- scikit-learn>=0.23
--sparseml
--ale-py>=0.7
+ mypy==0.982
+-atari-py==0.2.9  # needed for RL
+ scikit-learn>=1.0.2, <=1.1.3
+-sparseml>=1.0.0, <=1.2.0
+-ale-py>=0.7, <=0.8.0
  jsonargparse[signatures]  # for LightningCLI

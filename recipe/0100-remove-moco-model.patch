@@ -439,15 +439,18 @@ index 8548102..0000000
 -)
 diff --git a/pl_bolts/models/self_supervised/moco/callbacks.py b/pl_bolts/models/self_supervised/moco/callbacks.py
 deleted file mode 100644
-index 992c1a2..0000000
+index 442708f..0000000
 --- a/pl_bolts/models/self_supervised/moco/callbacks.py
 +++ /dev/null
-@@ -1,26 +0,0 @@
+@@ -1,29 +0,0 @@
 -import math
 -
 -from pytorch_lightning import Callback
 -
+-from pl_bolts.utils.stability import under_review
 -
+-
+-@under_review()
 -class MocoLRScheduler(Callback):
 -    def __init__(self, initial_lr=0.03, use_cosine_scheduler=False, schedule=(120, 160), max_epochs=200):
 -        super().__init__()
@@ -456,7 +459,7 @@ index 992c1a2..0000000
 -        self.schedule = schedule
 -        self.max_epochs = max_epochs
 -
--    def on_epoch_start(self, trainer, pl_module):
+-    def on_train_epoch_start(self, trainer, pl_module):
 -        epoch = trainer.current_epoch
 -        lr = self.lr
 -
@@ -471,10 +474,10 @@ index 992c1a2..0000000
 -            param_group["lr"] = lr
 diff --git a/pl_bolts/models/self_supervised/moco/moco2_module.py b/pl_bolts/models/self_supervised/moco/moco2_module.py
 deleted file mode 100644
-index 5ab20d0..0000000
+index 75ae274..0000000
 --- a/pl_bolts/models/self_supervised/moco/moco2_module.py
 +++ /dev/null
-@@ -1,396 +0,0 @@
+@@ -1,401 +0,0 @@
 -"""Adapted from: https://github.com/facebookresearch/moco.
 -
 -Original work is: Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
@@ -490,7 +493,7 @@ index 5ab20d0..0000000
 -
 -import torch
 -from pytorch_lightning import LightningModule, Trainer
--from pytorch_lightning.plugins import DDP2Plugin, DDPPlugin
+-from pytorch_lightning.strategies import DDPStrategy
 -from torch import nn
 -from torch.nn import functional as F
 -
@@ -504,6 +507,7 @@ index 5ab20d0..0000000
 -    Moco2TrainSTL10Transforms,
 -)
 -from pl_bolts.utils import _TORCHVISION_AVAILABLE
+-from pl_bolts.utils.stability import under_review
 -from pl_bolts.utils.warnings import warn_missing_pkg
 -
 -if _TORCHVISION_AVAILABLE:
@@ -512,6 +516,7 @@ index 5ab20d0..0000000
 -    warn_missing_pkg("torchvision")
 -
 -
+-@under_review()
 -class Moco_v2(LightningModule):
 -    """PyTorch Lightning implementation of `Moco <https://arxiv.org/abs/2003.04297>`_
 -
@@ -522,6 +527,7 @@ index 5ab20d0..0000000
 -        - `William Falcon <https://github.com/williamFalcon>`_
 -
 -    Example::
+-
 -        from pl_bolts.models.self_supervised import Moco_v2
 -        model = Moco_v2()
 -        trainer = Trainer()
@@ -622,7 +628,7 @@ index 5ab20d0..0000000
 -    @torch.no_grad()
 -    def _dequeue_and_enqueue(self, keys, queue_ptr, queue):
 -        # gather keys before updating queue
--        if self._use_ddp_or_ddp2(self.trainer):
+-        if self._use_ddp(self.trainer):
 -            keys = concat_all_gather(keys)
 -
 -        batch_size = keys.shape[0]
@@ -701,14 +707,14 @@ index 5ab20d0..0000000
 -        with torch.no_grad():  # no gradient to keys
 -
 -            # shuffle for making use of BN
--            if self._use_ddp_or_ddp2(self.trainer):
+-            if self._use_ddp(self.trainer):
 -                img_k, idx_unshuffle = self._batch_shuffle_ddp(img_k)
 -
 -            k = self.encoder_k(img_k)  # keys: NxC
 -            k = nn.functional.normalize(k, dim=1)
 -
 -            # undo shuffle
--            if self._use_ddp_or_ddp2(self.trainer):
+-            if self._use_ddp(self.trainer):
 -                k = self._batch_unshuffle_ddp(k, idx_unshuffle)
 -
 -        # compute logits
@@ -812,12 +818,13 @@ index 5ab20d0..0000000
 -        return parser
 -
 -    @staticmethod
--    def _use_ddp_or_ddp2(trainer: Trainer) -> bool:
--        return isinstance(trainer.training_type_plugin, (DDPPlugin, DDP2Plugin))
+-    def _use_ddp(trainer: Trainer) -> bool:
+-        return isinstance(trainer.strategy, DDPStrategy)
 -
 -
 -# utils
 -@torch.no_grad()
+-@under_review()
 -def concat_all_gather(tensor):
 -    """Performs all_gather operation on the provided tensors.
 -
@@ -830,6 +837,7 @@ index 5ab20d0..0000000
 -    return output
 -
 -
+-@under_review()
 -def cli_main():
 -    from pl_bolts.datamodules import CIFAR10DataModule, SSLImagenetDataModule, STL10DataModule
 -
@@ -873,10 +881,10 @@ index 5ab20d0..0000000
 -    cli_main()
 diff --git a/pl_bolts/models/self_supervised/moco/transforms.py b/pl_bolts/models/self_supervised/moco/transforms.py
 deleted file mode 100644
-index 60ffb5e..0000000
+index c2a79cc..0000000
 --- a/pl_bolts/models/self_supervised/moco/transforms.py
 +++ /dev/null
-@@ -1,197 +0,0 @@
+@@ -1,205 +0,0 @@
 -import random
 -
 -from pl_bolts.transforms.dataset_normalizations import (
@@ -885,6 +893,7 @@ index 60ffb5e..0000000
 -    stl10_normalization,
 -)
 -from pl_bolts.utils import _PIL_AVAILABLE, _TORCHVISION_AVAILABLE
+-from pl_bolts.utils.stability import under_review
 -from pl_bolts.utils.warnings import warn_missing_pkg
 -
 -if _TORCHVISION_AVAILABLE:
@@ -898,6 +907,7 @@ index 60ffb5e..0000000
 -    warn_missing_pkg("PIL", pypi_name="Pillow")
 -
 -
+-@under_review()
 -class Moco2TrainCIFAR10Transforms:
 -    """Moco 2 augmentation:
 -
@@ -927,6 +937,7 @@ index 60ffb5e..0000000
 -        return q, k
 -
 -
+-@under_review()
 -class Moco2EvalCIFAR10Transforms:
 -    """Moco 2 augmentation:
 -
@@ -952,6 +963,7 @@ index 60ffb5e..0000000
 -        return q, k
 -
 -
+-@under_review()
 -class Moco2TrainSTL10Transforms:
 -    """Moco 2 augmentation:
 -
@@ -981,6 +993,7 @@ index 60ffb5e..0000000
 -        return q, k
 -
 -
+-@under_review()
 -class Moco2EvalSTL10Transforms:
 -    """Moco 2 augmentation:
 -
@@ -1006,6 +1019,7 @@ index 60ffb5e..0000000
 -        return q, k
 -
 -
+-@under_review()
 -class Moco2TrainImagenetTransforms:
 -    """Moco 2 augmentation:
 -
@@ -1035,6 +1049,7 @@ index 60ffb5e..0000000
 -        return q, k
 -
 -
+-@under_review()
 -class Moco2EvalImagenetTransforms:
 -    """Moco 2 augmentation:
 -
@@ -1060,6 +1075,7 @@ index 60ffb5e..0000000
 -        return q, k
 -
 -
+-@under_review()
 -class GaussianBlur:
 -    """Gaussian blur augmentation in SimCLR https://arxiv.org/abs/2002.05709."""
 -
@@ -1075,19 +1091,22 @@ index 60ffb5e..0000000
 -        x = x.filter(ImageFilter.GaussianBlur(radius=sigma))
 -        return x
 diff --git a/tests/models/self_supervised/test_models.py b/tests/models/self_supervised/test_models.py
-index 59f0ca0..96f2f2b 100644
+index 9db7ad4..248814c 100644
 --- a/tests/models/self_supervised/test_models.py
 +++ b/tests/models/self_supervised/test_models.py
-@@ -7,8 +7,6 @@ from pytorch_lightning import Trainer
+@@ -6,10 +6,8 @@ from pytorch_lightning import Trainer
+ from pytorch_lightning.utilities.warnings import PossibleUserWarning
+ 
  from pl_bolts.datamodules import CIFAR10DataModule
- from pl_bolts.models.self_supervised import AMDIM, BYOL, CPC_v2, Moco_v2, SimCLR, SimSiam, SwAV
+-from pl_bolts.models.self_supervised import AMDIM, BYOL, CPC_v2, Moco_v2, SimCLR, SimSiam, SwAV
++from pl_bolts.models.self_supervised import AMDIM, BYOL, CPC_v2, SimCLR, SimSiam, SwAV
  from pl_bolts.models.self_supervised.cpc import CPCEvalTransformsCIFAR10, CPCTrainTransformsCIFAR10
 -from pl_bolts.models.self_supervised.moco.callbacks import MocoLRScheduler
 -from pl_bolts.models.self_supervised.moco.transforms import Moco2EvalCIFAR10Transforms, Moco2TrainCIFAR10Transforms
  from pl_bolts.models.self_supervised.simclr.transforms import SimCLREvalDataTransform, SimCLRTrainDataTransform
  from pl_bolts.models.self_supervised.swav.transforms import SwAVEvalDataTransform, SwAVTrainDataTransform
  from pl_bolts.transforms.dataset_normalizations import cifar10_normalization
-@@ -55,16 +53,6 @@ def test_amdim(tmpdir, datadir):
+@@ -66,16 +64,6 @@ def test_amdim(tmpdir, datadir):
      trainer.fit(model)
  
  
@@ -1105,14 +1124,13 @@ index 59f0ca0..96f2f2b 100644
      datamodule = CIFAR10DataModule(data_dir=datadir, num_workers=0, batch_size=2)
      datamodule.train_transforms = SimCLRTrainDataTransform(32)
 diff --git a/tests/models/self_supervised/test_ssl_scripts.py b/tests/models/self_supervised/test_ssl_scripts.py
-index e58fad9..3da8a71 100644
+index eb70e65..e4833f3 100644
 --- a/tests/models/self_supervised/test_ssl_scripts.py
 +++ b/tests/models/self_supervised/test_ssl_scripts.py
-@@ -43,23 +43,6 @@ def test_cli_run_ssl_cpc(cli_args, dataset_name):
-     with mock.patch("argparse._sys.argv", ["any.py"] + cli_args):
+@@ -44,22 +44,6 @@ def test_cli_run_ssl_cpc(cli_args, dataset_name):
          cli_main()
  
--
+ 
 -@pytest.mark.parametrize(
 -    "cli_args",
 -    [

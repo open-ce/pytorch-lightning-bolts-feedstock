@@ -1,0 +1,25 @@
+From 2d785300549d14f696f5bfca44f493167cfd32a5 Mon Sep 17 00:00:00 2001
+From: Deepali Chourasia <deepch23@in.ibm.com>
+Date: Thu, 23 Mar 2023 06:29:29 +0000
+Subject: [PATCH] fix DataParallelStrategy import
+
+---
+ pl_bolts/models/rl/dqn_model.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pl_bolts/models/rl/dqn_model.py b/pl_bolts/models/rl/dqn_model.py
+index 2091e68..5cb6df0 100644
+--- a/pl_bolts/models/rl/dqn_model.py
++++ b/pl_bolts/models/rl/dqn_model.py
+@@ -7,7 +7,7 @@ import numpy as np
+ import torch
+ from pytorch_lightning import LightningModule, Trainer, seed_everything
+ from pytorch_lightning.callbacks import ModelCheckpoint
+-from pytorch_lightning.strategies import DataParallelStrategy
++from lightning_fabric.strategies import DataParallelStrategy
+ from torch import Tensor, optim
+ from torch.optim.optimizer import Optimizer
+ from torch.utils.data import DataLoader
+-- 
+2.34.1
+

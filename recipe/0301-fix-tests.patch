@@ -1,8 +1,23 @@
+From c720e2f6940e53d98311a5f747367c8d7028a9d3 Mon Sep 17 00:00:00 2001
+From: Deepali Chourasia <deepch23@in.ibm.com>
+Date: Thu, 20 Apr 2023 07:01:41 +0000
+Subject: [PATCH] fix tests
+
+---
+ requirements/test.txt | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
 diff --git a/requirements/test.txt b/requirements/test.txt
-index 8632fbc..08d4481 100644
+index 8632fbc..b57fb53 100644
 --- a/requirements/test.txt
 +++ b/requirements/test.txt
-@@ -6,8 +6,5 @@ pytest-cov>2.10, <=4.0.0
+@@ -1,13 +1,10 @@
+ # coverage>=5.0
+-codecov>=2.1, <=2.1.12
++codecov>=2.1, <=2.1.13
+ pytest>=6.0, <=7.2.0
+ pytest-cov>2.10, <=4.0.0
+ # pytest-flake8
  check-manifest
  pre-commit>=1.0
  mypy==0.982
@@ -11,3 +26,6 @@ index 8632fbc..08d4481 100644
 -sparseml>=1.0.0, <=1.2.0
 -ale-py>=0.7, <=0.8.0
  jsonargparse[signatures]  # for LightningCLI
+-- 
+2.34.1
+

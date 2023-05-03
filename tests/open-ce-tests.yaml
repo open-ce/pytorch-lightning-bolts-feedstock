@@ -46,6 +46,8 @@ tests:
                       tests/models
                       tests/models/rl/integration/test_value_models.py
                       tests/callbacks/verification/test_batch_gradient.py
+                      tests/datasets/test_datasets.py
+                      tests/datamodules/test_datamodules.py
         )
 
         for skipped_test in "${TESTSUITES_TO_SKIP[@]}"

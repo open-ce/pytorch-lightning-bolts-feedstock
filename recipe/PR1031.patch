@@ -1,0 +1,146 @@
+From 3f67951dfafe1db8aa0347c4b292a85430c1981f Mon Sep 17 00:00:00 2001
+From: Deepali Chourasia <deepch23@in.ibm.com>
+Date: Tue, 1 Aug 2023 08:09:48 +0000
+Subject: [PATCH] PR1031
+
+---
+ requirements/base.txt                                 | 2 +-
+ src/pl_bolts/callbacks/data_monitor.py                | 2 +-
+ src/pl_bolts/callbacks/verification/batch_gradient.py | 2 +-
+ src/pl_bolts/models/detection/yolo/yolo_module.py     | 6 +++++-
+ src/pl_bolts/models/rl/dqn_model.py                   | 6 +++++-
+ tests/callbacks/test_ort.py                           | 2 +-
+ tests/callbacks/test_sparseml.py                      | 3 ++-
+ tests/conftest.py                                     | 7 ++++++-
+ 8 files changed, 22 insertions(+), 8 deletions(-)
+
+diff --git a/requirements/base.txt b/requirements/base.txt
+index 7189fe7..77a03a8 100644
+--- a/requirements/base.txt
++++ b/requirements/base.txt
+@@ -1,5 +1,5 @@
+ numpy <1.26.0
+-pytorch-lightning >1.7.0, <2.0.0  # strict
++pytorch-lightning >1.7.0, <2.1.0
+ torchmetrics <0.12.0
+ lightning-utilities >0.3.1  # this is needed for PL 1.7
+ torchvision >=0.10.0  # todo: move to topic related extras
+diff --git a/src/pl_bolts/callbacks/data_monitor.py b/src/pl_bolts/callbacks/data_monitor.py
+index 62ec3b7..2d67c9d 100644
+--- a/src/pl_bolts/callbacks/data_monitor.py
++++ b/src/pl_bolts/callbacks/data_monitor.py
+@@ -2,10 +2,10 @@ from typing import Any, Dict, List, Optional, Sequence, Union
+ 
+ import numpy as np
+ import torch
++from lightning_utilities import apply_to_collection
+ from pytorch_lightning import Callback, LightningModule, Trainer
+ from pytorch_lightning.loggers import TensorBoardLogger, WandbLogger
+ from pytorch_lightning.utilities import rank_zero_warn
+-from pytorch_lightning.utilities.apply_func import apply_to_collection
+ from torch import Tensor, nn
+ from torch.nn import Module
+ from torch.utils.hooks import RemovableHandle
+diff --git a/src/pl_bolts/callbacks/verification/batch_gradient.py b/src/pl_bolts/callbacks/verification/batch_gradient.py
+index a7fef82..466e7b9 100644
+--- a/src/pl_bolts/callbacks/verification/batch_gradient.py
++++ b/src/pl_bolts/callbacks/verification/batch_gradient.py
+@@ -4,8 +4,8 @@ from typing import Any, Callable, Iterable, List, Optional, Type
+ 
+ import torch
+ import torch.nn as nn
++from lightning_utilities import apply_to_collection
+ from pytorch_lightning import LightningModule, Trainer
+-from pytorch_lightning.utilities.apply_func import apply_to_collection
+ from pytorch_lightning.utilities.exceptions import MisconfigurationException
+ from torch import Tensor
+ 
+diff --git a/src/pl_bolts/models/detection/yolo/yolo_module.py b/src/pl_bolts/models/detection/yolo/yolo_module.py
+index eb73280..525c52d 100644
+--- a/src/pl_bolts/models/detection/yolo/yolo_module.py
++++ b/src/pl_bolts/models/detection/yolo/yolo_module.py
+@@ -4,10 +4,14 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
+ import torch
+ import torch.nn as nn
+ from pytorch_lightning import LightningModule
+-from pytorch_lightning.utilities.cli import LightningCLI
+ from pytorch_lightning.utilities.types import STEP_OUTPUT
+ from torch import Tensor, optim
+ 
++try:  # Backward compatibility for Lightning CLI
++    from pytorch_lightning.cli import LightningCLI  # PL v1.9+
++except ImportError:
++    from pytorch_lightning.utilities.cli import LightningCLI  # PL v1.8
++
+ # It seems to be impossible to avoid mypy errors if using import instead of getattr().
+ # See https://github.com/python/mypy/issues/8823
+ try:
+diff --git a/src/pl_bolts/models/rl/dqn_model.py b/src/pl_bolts/models/rl/dqn_model.py
+index 1aea71a..3b17e33 100644
+--- a/src/pl_bolts/models/rl/dqn_model.py
++++ b/src/pl_bolts/models/rl/dqn_model.py
+@@ -7,11 +7,15 @@ import numpy as np
+ import torch
+ from pytorch_lightning import LightningModule, Trainer, seed_everything
+ from pytorch_lightning.callbacks import ModelCheckpoint
+-from pytorch_lightning.strategies import DataParallelStrategy
+ from torch import Tensor, optim
+ from torch.optim.optimizer import Optimizer
+ from torch.utils.data import DataLoader
+ 
++try:
++    from pytorch_lightning.strategies import DataParallelStrategy  # for PL v1.X
++except ImportError:
++    from lightning_fabric.strategies import DataParallelStrategy  # for PL v2.X
++
+ from pl_bolts.datamodules.experience_source import Experience, ExperienceSourceDataset
+ from pl_bolts.losses.rl import dqn_loss
+ from pl_bolts.models.rl.common.agents import ValueAgent
+diff --git a/tests/callbacks/test_ort.py b/tests/callbacks/test_ort.py
+index 9186c3a..6285216 100644
+--- a/tests/callbacks/test_ort.py
++++ b/tests/callbacks/test_ort.py
+@@ -16,7 +16,7 @@ import pytest
+ from pl_bolts.callbacks import ORTCallback
+ from pl_bolts.utils import _TORCH_ORT_AVAILABLE
+ from pytorch_lightning import Callback, Trainer
+-from pytorch_lightning.core.lightning import LightningModule
++from pytorch_lightning.core import LightningModule
+ from pytorch_lightning.utilities.exceptions import MisconfigurationException
+ 
+ from tests.helpers.boring_model import BoringModel
+diff --git a/tests/callbacks/test_sparseml.py b/tests/callbacks/test_sparseml.py
+index fdef958..ddd8edd 100644
+--- a/tests/callbacks/test_sparseml.py
++++ b/tests/callbacks/test_sparseml.py
+@@ -18,7 +18,8 @@ import pytest
+ import torch
+ from pl_bolts.callbacks import SparseMLCallback
+ from pl_bolts.utils import _SPARSEML_TORCH_SATISFIED
+-from pytorch_lightning import Callback, LightningModule, Trainer
++from pytorch_lightning import Callback, Trainer
++from pytorch_lightning.core import LightningModule
+ from pytorch_lightning.utilities.exceptions import MisconfigurationException
+ 
+ from tests.helpers.boring_model import BoringModel
+diff --git a/tests/conftest.py b/tests/conftest.py
+index 7637c05..2da0112 100644
+--- a/tests/conftest.py
++++ b/tests/conftest.py
+@@ -7,7 +7,12 @@ import pytest
+ import torch
+ from pl_bolts.utils import _IS_WINDOWS, _TORCHVISION_AVAILABLE, _TORCHVISION_LESS_THAN_0_13
+ from pl_bolts.utils.stability import UnderReviewWarning
+-from pytorch_lightning.trainer.connectors.signal_connector import SignalConnector
++
++
++try:
++    from pytorch_lightning.trainer.connectors.signal_connector import SignalConnector
++except ImportError:  # patch for PL v2.0+
++    from pytorch_lightning.trainer.connectors.signal_connector import _SignalConnector as SignalConnector
+ 
+ # GitHub Actions use this path to cache datasets.
+ # Use `datadir` fixture where possible and use `DATASETS_PATH` in
+-- 
+2.40.1
+

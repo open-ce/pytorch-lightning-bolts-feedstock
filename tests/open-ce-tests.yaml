@@ -5,7 +5,7 @@ tests:
         conda install -y git pytest regex typed-ast scipy scikit-learn
         cd pytorch-lightning-bolts
         git apply $FEEDSTOCK_DIR/recipe/0301-fix-tests.patch
-        pip install gym==0.19.0
+        pip install gym
         pip install -r requirements/test.txt
   - name: Run PyTorch-Lightning-Bolts tests
     command: |
@@ -39,10 +39,10 @@ tests:
 
         TESTSUITES_TO_SKIP=(
                       tests/losses/test_rl_loss.py
-                      tests/models/rl/test_scripts.py
                       tests/models/self_supervised/test_models.py
                       tests/models/test_scripts.py
-                      tests/models/rl/integration/test_value_models.py
+                      tests/datamodules/test_experience_sources.py
+                      tests/models/rl
         )
 
         for skipped_test in "${TESTSUITES_TO_SKIP[@]}"

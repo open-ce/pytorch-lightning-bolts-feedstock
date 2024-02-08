@@ -48,6 +48,7 @@ tests:
                       tests/datasets/test_datasets.py
                       tests/datamodules/test_datamodules.py
                       tests/datamodules/test_experience_sources.py
+                      tests/callbacks/test_data_monitor.py
         )
 
         for skipped_test in "${TESTSUITES_TO_SKIP[@]}"

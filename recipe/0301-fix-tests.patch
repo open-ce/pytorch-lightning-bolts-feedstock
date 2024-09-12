@@ -1,14 +1,14 @@
-From 56561716f0572b5630fcaac440bfb21ca45aa946 Mon Sep 17 00:00:00 2001
-From: Archana-Shinde1 <archana.shinde1@ibm.com>
-Date: Tue, 26 Mar 2024 17:34:19 +0000
+From bca5b07545e8c6b065c432e511292d276ccb608c Mon Sep 17 00:00:00 2001
+From: Aman Surkar <Aman.Surkar@ibm.com>
+Date: Thu, 12 Sep 2024 09:04:09 +0000
 Subject: [PATCH] fix test
 
 ---
- requirements/test.txt | 3 ---
- 1 file changed, 3 deletions(-)
+ requirements/test.txt | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
 diff --git a/requirements/test.txt b/requirements/test.txt
-index 9e5f015..42088e4 100644
+index 9e5f015..0983bbe 100644
 --- a/requirements/test.txt
 +++ b/requirements/test.txt
 @@ -4,7 +4,4 @@ pytest-cov ==4.1.0
@@ -18,7 +18,8 @@ index 9e5f015..42088e4 100644
 -scikit-learn >=1.0.2, <=1.2.2
 -sparseml >1.0.0, <1.6.0
 -ale-py >=0.7, <=0.8.1
- jsonargparse[signatures] >4.0.0, <=4.22.0  # for LightningCLI
+-jsonargparse[signatures] >4.0.0, <=4.22.0  # for LightningCLI
++jsonargparse[signatures] >4.0.0  # for LightningCLI
 -- 
 2.40.1
 
